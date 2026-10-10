@@ -2,7 +2,7 @@
 
 For permanent server deployment, runtime-data migration, cost estimates and rollback, see [Cloud migration](docs/CLOUD-MIGRATION.md). The existing Cloudflare relay to a workstation is not permanent compute.
 
-[![CI](https://github.com/Katzca/AutoSocial/actions/workflows/ci.yml/badge.svg)](https://github.com/Katzca/AutoSocial/actions/workflows/ci.yml)
+[![CI](https://github.com/tlrus/AutoSocial/actions/workflows/ci.yml/badge.svg)](https://github.com/tlrus/AutoSocial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js >=20.9](https://img.shields.io/badge/node-%3E%3D20.9-brightgreen.svg)](package.json)
 

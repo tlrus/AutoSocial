@@ -38,12 +38,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Katzca/AutoSocial.git"
+    "url": "git+https://github.com/tlrus/AutoSocial.git"
   },
   "bugs": {
-    "url": "https://github.com/Katzca/AutoSocial/issues"
+    "url": "https://github.com/tlrus/AutoSocial/issues"
   },
-  "homepage": "https://github.com/Katzca/AutoSocial#readme",
+  "homepage": "https://github.com/tlrus/AutoSocial#readme",
   "engines": {
     "node": ">=20.9.0"
   },
