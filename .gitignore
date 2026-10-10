@@ -1,0 +1,93 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+.foglamp/
+*.key
+*.pem
+deploy/secrets/
+deploy/backups/
+
+# Browser profiles (session data)
+.profile/
+.profile-instagram/
+.profile-youtube/
+.profiles/
+.profile-*/
+
+# Scheduler and runtime state
+.scheduler-state/
+*-state.json
+
+# Queue and render outputs
+/queue/
+/uploads/
+queue/*/*/posted/
+queue/*/*/failed/
+queue/uniquify-output/
+
+# Auto-download runtime data
+autodownload/downloads/
+autodownload/profile_downloads/
+autodownload/archive.txt
+autodownload/yt-dlp.exe
+autodownload/info.json
+autodownload/*.info.json
+
+# Legacy/manual runtime folders
+downloads/
+user-assets/
+
+# Local notes
+.local/
+/scratch/
+/docs/CLOUD-DEPLOYMENT.md
+/docs/FREE-HOSTING.md
+/docs/CODEX-CLOUD.md
+/about-me.md
+/audio_challenge.png
+/ig-*.png
+/solve_test.png
+/step*.png
+/login-*.bat
+/scripts/auto-login-instagram.js
+/scripts/check-chrome-cookies.js
+/scripts/check_main_chrome.js
+/scripts/inspect-recaptcha.js
+/scripts/login-with-recaptcha.js
+/scripts/test-audio.js
+/scripts/test-headless-login.js
+deploy/.env
+deploy/data/
+*.cookies.json
+sites/dist/
+sites/.sites-runtime/
+sites/.wrangler/
+
+# Debug screenshots
+last-*.png
+qa-*.png
+.dashboard.*.log
+
+# Saved browser pages (dev reference, root-level only)
+/*.html
+/*_files/
+
+# Media files generated or dropped into runtime workflows
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+queue/**/*.description
+queue/**/*.txt
+
+# Keep docs visible
+!README.md
+!SETUP.md
+
+# Private generated post drafts
+queue/**/agent-drafts/

@@ -1,0 +1,61 @@
+{
+  "name": "autosocial-studio",
+  "version": "0.1.0",
+  "description": "Local multi-account social media automation dashboard for TikTok, Instagram, and YouTube",
+  "private": true,
+  "packageManager": "npm@11.16.0",
+  "main": "src/cli.js",
+  "scripts": {
+    "start": "node src/dashboard-server.js",
+    "clean:debug": "node scripts/clean-runtime.js",
+    "check": "npm run check:syntax && npm test",
+    "check:syntax": "node scripts/check-syntax.js",
+    "doctor": "node scripts/doctor.js",
+    "test": "node --test test/*.test.js",
+    "login": "node src/cli.js login",
+    "post": "node src/cli.js post",
+    "daemon": "node src/cli.js daemon",
+    "dashboard": "node src/dashboard-server.js",
+    "setup:password": "node scripts/setup-dashboard-password.js",
+    "uniquify": "node src/cli.js uniquify",
+    "video-info": "node src/cli.js video-info",
+    "autodownload": "node autodownload/watcher.js"
+  },
+  "keywords": [
+    "automation",
+    "dashboard",
+    "creator-tools",
+    "marketing",
+    "social-media",
+    "indie-hackers",
+    "ai-builders",
+    "playwright",
+    "tiktok",
+    "instagram",
+    "youtube"
+  ],
+  "author": "AutoSocial Studio contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Katzca/AutoSocial.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Katzca/AutoSocial/issues"
+  },
+  "homepage": "https://github.com/Katzca/AutoSocial#readme",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "bmp-js": "^0.1.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "heic-decode": "^2.1.0",
+    "multer": "^2.4.0",
+    "node-cron": "^4.2.1",
+    "playwright": "^1.58.2",
+    "sharp": "^0.35.5",
+    "yargs": "^18.0.0"
+  }
+}
