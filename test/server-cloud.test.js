@@ -1,0 +1,54 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs/promises");
+const os = require("node:os");
+const path = require("node:path");
+
+test("cloud server protects real routes, stores data separately, and refuses anonymous remote binding", async (t) => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "autosocial-cloud-test-"));
+  process.env.AUTOSOCIAL_DATA_DIR = dir;
+  process.env.AUTOSOCIAL_ENV_FILE = path.join(dir, "settings.env");
+  process.env.DASHBOARD_HOST = "127.0.0.1";
+  process.env.DASHBOARD_PORT = "0";
+  process.env.AUTOSOCIAL_START_BACKGROUND = "false";
+  await fs.mkdir(path.join(dir, ".scheduler-state", "default"), { recursive: true });
+  await fs.writeFile(path.join(dir, ".scheduler-state", "default", "youtube-scheduler-state.json"), JSON.stringify({ instantPost: true }));
+  const { hashPassword } = require("../src/dashboard-auth");
+  process.env.DASHBOARD_PASSWORD_HASH = await hashPassword("cloud-test-password");
+  const { createServer, ensureDashboardBindAllowed } = require("../src/dashboard-server");
+  const { config } = require("../src/config");
+  const { getDaemons } = require("../src/daemon-registry");
+  const { server, shutdown } = await createServer();
+  t.after(async () => { await shutdown(); await fs.rm(dir, { recursive: true, force: true }); });
+  const url = `http://127.0.0.1:${server.address().port}`;
+  assert.deepEqual(await (await fetch(`${url}/healthz`)).json(), { ok: true });
+  assert.equal((await fetch(`${url}/api/accounts`)).status, 401);
+  assert.equal((await fetch(`${url}/api/agents/status`)).status, 401);
+  assert.equal((await fetch(`${url}/api/agents/runs`, { method: "POST" })).status, 401);
+  assert.equal((await fetch(`${url}/user-assets/anything`, { redirect: "manual" })).status, 302);
+  assert.equal((await fetch(`${url}/api/instagram/session/import`, { method: "POST" })).status, 401);
+  const response = await fetch(`${url}/api/auth/login`, {
+    method: "POST", headers: { "Content-Type": "application/json", Origin: url }, body: JSON.stringify({ password: "cloud-test-password" }),
+  });
+  assert.equal(response.status, 200);
+  const cookie = response.headers.get("set-cookie").split(";")[0];
+  const headers = { cookie, Origin: url, "Content-Type": "application/json" };
+  assert.equal((await fetch(`${url}/api/accounts`, { headers })).status, 200);
+  assert.equal((await fetch(`${url}/api/agents/runs/not-a-run`, { headers })).status, 404);
+  assert.equal((await fetch(`${url}/api/agents/runs`, { method: "POST", headers, body: JSON.stringify({ topic: "test", agentIds: ["unknown"], model: "model" }) })).status, 400);
+  assert.equal((await fetch(`${url}/api/instagram/session/import`, { method: "POST", headers, body: JSON.stringify({ sessionid: "missing-user-id" }) })).status, 400);
+  const settings = await fetch(`${url}/api/settings/save`, { method: "POST", headers, body: JSON.stringify({ payload: { DEFAULT_CAPTION: "saved in persistent data" } }) });
+  assert.equal(settings.status, 200);
+  assert.match(await fs.readFile(config.envFile, "utf8"), /saved in persistent data/);
+  const daemons = await getDaemons("default");
+  assert.equal(daemons.youtube._queueWatcher, null);
+  assert.equal(daemons.youtube.task, null);
+  daemons.youtube.start();
+  assert.equal(JSON.parse(await fs.readFile(path.join(dir, ".scheduler-state", "runtime.json"), "utf8"))["default:youtube"], true);
+  daemons.youtube.stop();
+  assert.equal(JSON.parse(await fs.readFile(path.join(dir, ".scheduler-state", "runtime.json"), "utf8"))["default:youtube"], false);
+  config.dashboardHost = "0.0.0.0";
+  config.dashboardAllowRemote = true;
+  config.dashboardPasswordHash = "";
+  assert.throws(ensureDashboardBindAllowed, /requires a password/);
+});
