@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "autosocial-studio",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-04",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false }
+}
