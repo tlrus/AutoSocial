@@ -1,0 +1,104 @@
+name: autosocial
+services:
+  autosocial:
+    image: ${AUTOSOCIAL_IMAGE:-autosocial:cloud}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    shm_size: 1gb
+    environment:
+      TZ: ${TZ:-Asia/Qyzylorda}
+      AUTOSOCIAL_START_BACKGROUND: ${AUTOSOCIAL_START_BACKGROUND:-false}
+      AUTOSOCIAL_SECRETS_FILE: /run/secrets/runtime_env
+      DASHBOARD_PUBLIC_URL: ${DASHBOARD_PUBLIC_URL:-}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
+    secrets:
+      - dashboard_password_hash
+      - runtime_env
+    volumes:
+      - autosocial-data:/data
+    expose:
+      - "3000"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    stop_grace_period: 40s
+    logging: &logs
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_CONTEXT_LENGTH: "8192"
+    volumes:
+      - ollama-data:/root/.ollama
+    expose:
+      - "11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    logging: *logs
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2}
+    restart: unless-stopped
+    environment:
+      AUTOSOCIAL_DOMAIN: ${AUTOSOCIAL_DOMAIN:?Set your server domain}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      autosocial:
+        condition: service_healthy
+    logging: *logs
+  model-init:
+    profiles: ["models"]
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "${OLLAMA_MODEL:-qwen2.5:3b}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+  backup:
+    profiles: ["ops"]
+    image: ${AUTOSOCIAL_IMAGE:-autosocial:cloud}
+    user: "0:0"
+    network_mode: none
+    entrypoint: ["node", "/app/scripts/cloud-data.js"]
+    command: ["export", "--source", "/data", "--output-dir", "/backups", "--key-file", "/run/secrets/backup_key"]
+    secrets:
+      - backup_key
+    volumes:
+      - autosocial-data:/data:ro
+      - ./backups:/backups
+secrets:
+  dashboard_password_hash:
+    file: ./secrets/dashboard-password-hash
+  runtime_env:
+    file: ./secrets/runtime.env
+  backup_key:
+    file: ./secrets/backup.key
+volumes:
+  autosocial-data:
+    name: autosocial-data
+  ollama-data:
+    name: autosocial-ollama-data
+  caddy-data:
+    name: autosocial-caddy-data
+  caddy-config:
+    name: autosocial-caddy-config

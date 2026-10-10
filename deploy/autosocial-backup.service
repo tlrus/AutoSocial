@@ -1,0 +1,10 @@
+[Unit]
+Description=Encrypted AutoSocial data backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/autosocial/deploy
+ExecStart=/bin/sh /opt/autosocial/deploy/backup.sh
+UMask=0077
