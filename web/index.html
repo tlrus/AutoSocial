@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoSocial Studio</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <!-- Using a CDN for icons for the premium look (Phosphor Icons or similar) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">A</div>
+        <div class="brand-meta">
+          <h1>AutoSocial</h1>
+          <div class="brand-account-switcher">
+            <select id="brandSelect" class="control-input brand-select"></select>
+            <button id="addBrandBtn" type="button" class="control-btn-small brand-add-btn" title="Add brand">
+              <i class="ph ph-plus"></i>
+            </button>
+          </div>
+          <div id="brandCreateRow" class="brand-create-row hidden">
+            <input id="brandNameInput" type="text" class="control-input brand-name-input"
+              placeholder="New brand name" />
+            <button id="saveBrandBtn" type="button" class="control-btn-small primary brand-create-btn">
+              Add
+            </button>
+            <button id="cancelBrandBtn" type="button" class="control-btn-small brand-create-btn">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="overview">
+          <i class="ph ph-squares-four"></i>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-view="calendar">
+          <i class="ph ph-calendar"></i>
+          <span>Calendar</span>
+        </button>
+        <button class="nav-item" data-view="skills">
+          <i class="ph ph-sparkle"></i>
+          <span>AI Agents & Skills</span>
+        </button>
+        <button class="nav-item" data-view="canvas">
+          <i class="ph ph-paint-brush-broad"></i>
+          <span>Content Canvas</span>
+        </button>
+
+        <div class="nav-label">Auto Post</div>
+        <button class="nav-item" data-view="tiktok">
+          <i class="ph ph-tiktok-logo"></i>
+          <span>TikTok</span>
+        </button>
+        <button class="nav-item" data-view="instagram">
+          <i class="ph ph-instagram-logo"></i>
+          <span>Instagram</span>
+        </button>
+        <button class="nav-item" data-view="youtube">
+          <i class="ph ph-youtube-logo"></i>
+          <span>YouTube</span>
+        </button>
+        <button class="nav-item" data-view="telegram">
+          <i class="ph ph-paper-plane-tilt"></i>
+          <span>Telegram</span>
+        </button>
+        <button class="nav-item" data-view="x">
+          <i class="ph ph-x-logo"></i>
+          <span>X (Twitter)</span>
+        </button>
+
+        <div class="nav-label">Tools</div>
+        <button class="nav-item" data-view="uniquifier">
+          <i class="ph ph-fingerprint"></i>
+          <span>Video Uniquifier</span>
+        </button>
+        <button class="nav-item" data-view="autodownload">
+          <i class="ph ph-download-simple"></i>
+          <span>Auto Download</span>
+        </button>
+        <button class="nav-item" data-view="profile-download">
+          <i class="ph ph-download"></i>
+          <span>Profile Downloader</span>
+        </button>
+
+        <div class="nav-label">Management</div>
+        <button class="nav-item" data-view="setup">
+          <i class="ph ph-list-checks"></i>
+          <span>Setup</span>
+        </button>
+        <button class="nav-item" data-view="accounts">
+          <i class="ph ph-users"></i>
+          <span>Accounts</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <i class="ph ph-gear"></i>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="connection-status" id="statusBadge">
+          <div class="connection-dot"></div>
+          <span>System Ready</span>
+        </div>
+        <button id="dashboardLogoutBtn" type="button" class="control-btn-small hidden">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- View: Overview -->
+      <section id="view-overview" class="view-section active">
+        <header class="view-header">
+          <h2>Dashboard Overview</h2>
+        </header>
+
+        <!-- Totals Row -->
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-film-strip"></i></div>
+            <div class="stat-value" id="pendingCount">0</div>
+            <div class="stat-label">Total Pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success"><i class="ph ph-check-circle"></i></div>
+            <div class="stat-value success" id="successCount">0</div>
+            <div class="stat-label">Total Posted</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon error"><i class="ph ph-warning-circle"></i></div>
+            <div class="stat-value error" id="failedCount">0</div>
+            <div class="stat-label">Total Failed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-users-three"></i></div>
+            <div class="stat-value" id="activeAccountsCount">0</div>
+            <div class="stat-label">Active Schedulers</div>
+          </div>
+        </div>
+
+        <!-- Profiles container (JS populates per-profile sections) -->
+        <div id="overviewProfilesContainer"></div>
+
+        <!-- Recent Logs -->
+        <div class="card full-width" style="margin-top:20px;">
+          <div class="card-title">Live System Logs</div>
+          <div class="logs-container" id="logsContainer">
+            <!-- JS Populates this -->
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Accounts -->
+      <section id="view-setup" class="view-section">
+        <header class="view-header">
+          <div>
+            <h2>First-Run Setup</h2>
+            <span class="view-subtitle">Check your local machine, login sessions, and queue folders.</span>
+          </div>
+          <button id="setupRefreshBtn" class="control-btn-small">
+            <i class="ph ph-arrows-clockwise"></i> Refresh
+          </button>
+        </header>
+
+        <div class="setup-layout">
+          <div class="setup-summary-card">
+            <div class="setup-summary-icon" id="setupSummaryIcon">
+              <i class="ph ph-circle-notch"></i>
+            </div>
+            <div>
+              <div class="setup-summary-label">Setup status</div>
+              <div class="setup-summary-title" id="setupSummaryTitle">Checking local setup</div>
+              <div class="setup-summary-meta" id="setupSummaryMeta">This runs local checks only.</div>
+            </div>
+          </div>
+
+          <div class="setup-metrics" id="setupMetrics">
+            <div class="setup-metric">
+              <span class="setup-metric-value">-</span>
+              <span class="setup-metric-label">Ready</span>
+            </div>
+            <div class="setup-metric">
+              <span class="setup-metric-value">-</span>
+              <span class="setup-metric-label">Warnings</span>
+            </div>
+            <div class="setup-metric">
+              <span class="setup-metric-value">-</span>
+              <span class="setup-metric-label">Blocking</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-grid">
+          <div class="card setup-card">
+            <div class="card-title">Local Health</div>
+            <div id="setupChecksList" class="setup-check-list">
+              <div class="setup-empty">Loading setup checks...</div>
+            </div>
+          </div>
+
+          <div class="card setup-card">
+            <div class="card-title">Login Sessions</div>
+            <div id="setupSessionsList" class="setup-check-list">
+              <div class="setup-empty">Loading sessions...</div>
+            </div>
+          </div>
+
+          <div class="card setup-card full-width">
+            <div class="card-title">Where to Put Videos</div>
+            <div id="setupFoldersList" class="setup-folder-list">
+              <div class="setup-empty">Loading folders...</div>
+            </div>
+          </div>
+
+          <div class="card setup-card full-width">
+            <div class="card-title">Suggested First Run</div>
+            <div id="setupNextSteps" class="setup-steps">
+              <div class="setup-empty">Loading next steps...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-accounts" class="view-section">
+        <header class="view-header">
+          <h2>Account Management <span id="activeBrandLabel" style="color:var(--text-muted); font-size:14px;"></span>
+          </h2>
+        </header>
+
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Session</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accountsTableBody">
+              <!-- JS Populates this -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- View: TikTok -->
+      <section id="view-tiktok" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:linear-gradient(135deg, #00f2ea, #ff0050); width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-tiktok-logo"></i></div>
+            <div>
+              <h2 style="margin:0;">TikTok Auto Post</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your TikTok schedule and queue</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="control-btn-small primary" data-platform="tiktok" data-action="login"><i class="ph ph-sign-in"></i> Connect Account</button>
+            <button class="control-btn-small danger" data-platform="tiktok" data-action="close" title="Close login browser"><i class="ph ph-x-circle"></i> Close Browser</button>
+            <span id="ttSessionStatusBadge" class="status-badge">Checking...</span>
+            <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+            <button id="ttRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="ttStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="ttStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="ttPendingCount">-</div>
+              <div class="stat-label">Pending TikToks</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="ttPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="ttFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="ttSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">TikTok Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="ttPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="ttPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="ttPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="ttPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="ttPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="ttCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="ttUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="ttTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="ttLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; flex-direction:column; gap:16px; margin-top:16px; border-top:1px solid var(--border-color); padding-top:16px;">
+              <label class="switch-container">
+                <input type="checkbox" id="ttInstantPostToggle">
+                <span class="slider"></span>
+                <span class="switch-label">
+                  <strong>Instant Post Mode</strong>
+                  <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">Skips queue intervals and
+                    Auto-Add Sound to post immediately when video appears in pending folder.</div>
+                </span>
+              </label>
+
+              <label class="switch-container">
+                <input type="checkbox" id="ttAutoAddSoundToggle">
+                <span class="slider"></span>
+                <span class="switch-label">
+                  <strong>Auto-Add Trending Sound</strong>
+                  <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">Automatically searches and
+                    applies a background sound during upload to satisfy TikTok algorithm. (Ignored during Instant Post)
+                  </div>
+                </span>
+              </label>
+
+              <div class="form-group">
+                <label>Sound Search Query</label>
+                <div class="input-group">
+                  <input id="ttSoundQueryInput" type="text" class="control-input"
+                    placeholder="Optional TikTok sound search term">
+                  <button id="ttSoundQuerySaveBtn" class="control-btn-small">
+                    Save Sound
+                  </button>
+                </div>
+              </div>
+
+              <label class="switch-container">
+                <input type="checkbox" id="ttRandomQueueToggle">
+                <span class="slider"></span>
+                <span class="switch-label">
+                  <strong>Random Queue Order (Global)</strong>
+                  <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">Chooses a random pending video each run instead of the first file alphabetically. Captions still stay attached to the selected video.</div>
+                </span>
+              </label>
+            </div>
+
+            <div class="card full-width">
+              <div class="card-title">TikTok Queue</div>
+              <div class="queue-list" id="ttQueueList"></div>
+            </div>
+
+            <div class="card full-width">
+              <div class="card-title">TikTok Live Logs</div>
+              <div class="logs-container" id="ttLogsContainer"></div>
+            </div>
+          </div>
+      </section>
+
+      <!-- View: Instagram -->
+      <section id="view-instagram" class="view-section">
+        <details class="card instagram-session-card">
+          <summary>Import an existing Instagram session</summary>
+          <p>Sign in and complete any security check in your regular browser. Copy sessionid and ds_user_id from Instagram cookies, or paste a cookies JSON export. AutoSocial checks the session before saving it.</p>
+          <form id="igImportForm" class="session-import-form">
+            <label for="igSessionId">sessionid</label>
+            <input id="igSessionId" class="control-input" type="password" autocomplete="off" maxlength="8192">
+            <label for="igUserId">ds_user_id</label>
+            <input id="igUserId" class="control-input" type="text" inputmode="numeric" autocomplete="off" maxlength="40">
+            <label for="igCookiesJson">Cookies JSON (optional, replaces the two fields above)</label>
+            <textarea id="igCookiesJson" class="control-input" rows="4" autocomplete="off" maxlength="131072"></textarea>
+            <button id="igImportSubmit" class="control-btn-small primary" type="submit">Check and save session</button>
+            <p id="igImportResult" role="status" aria-live="polite"></p>
+          </form>
+        </details>
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); width:40px; height:40px; font-size:24px;">
+              <i class="ph ph-instagram-logo"></i>
+            </div>
+            <div>
+              <h2 style="margin:0;">Instagram Reels</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your Reels schedule</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="control-btn-small primary" data-platform="instagram" data-action="login"><i class="ph ph-sign-in"></i> Connect Account</button>
+            <button class="control-btn-small danger" data-platform="instagram" data-action="close" title="Close login browser"><i class="ph ph-x-circle"></i> Close Browser</button>
+            <span id="igSessionStatusBadge" class="status-badge">Checking...</span>
+            <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+            <button id="igRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="igStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="igStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="igPendingCount">-</div>
+              <div class="stat-label">Pending Reels</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="igPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="igFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="igSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Instagram Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="igPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="igPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="igPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="igPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="igPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="igCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="igUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="igTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="igLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color);">
+              <label class="toggle-switch">
+                <input type="checkbox" id="igInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post</div>
+                <div style="color:var(--text-muted); font-size:12px;">Post immediately when a new file lands in the
+                  queue</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="igRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one. Captions still follow the chosen video.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Instagram Queue</div>
+            <div class="queue-list" id="igQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Instagram Live Logs</div>
+            <div class="logs-container" id="igLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: YouTube -->
+      <section id="view-youtube" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon" style="background:#ff0000; width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-youtube-logo"></i></div>
+            <div>
+              <h2 style="margin:0;">YouTube Shorts</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your Shorts schedule</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="control-btn-small primary" data-platform="youtube" data-action="login"><i class="ph ph-sign-in"></i> Connect Account</button>
+            <button class="control-btn-small danger" data-platform="youtube" data-action="close" title="Close login browser"><i class="ph ph-x-circle"></i> Close Browser</button>
+            <span id="ytSessionStatusBadge" class="status-badge">Checking...</span>
+            <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+            <button id="ytRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="ytStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="ytStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="ytPendingCount">-</div>
+              <div class="stat-label">Pending Shorts</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="ytPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="ytFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="ytSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">YouTube Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="ytPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="ytPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="ytPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="ytPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="ytPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="ytCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="ytUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="ytTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="ytLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color);">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ytInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post</div>
+                <div style="color:var(--text-muted); font-size:12px;">Post immediately when a new file lands in the
+                  queue</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ytRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one. Captions still follow the chosen video.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">YouTube Queue</div>
+            <div class="queue-list" id="ytQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">YouTube Live Logs</div>
+            <div class="logs-container" id="ytLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Telegram -->
+      <section id="view-telegram" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:#2AABEE; width:40px; height:40px; font-size:24px; color:#fff;">
+              <i class="ph ph-paper-plane-tilt"></i>
+            </div>
+            <div>
+              <h2 style="margin:0;">Telegram Channel</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Publish videos to your Telegram channel via Bot API</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="control-btn-small primary" data-platform="telegram" data-action="login"><i class="ph ph-gear"></i> Configure Bot</button>
+            <span id="tgSessionStatusBadge" class="status-badge">Checking...</span>
+            <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+            <button id="tgRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="tgStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="tgStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="tgPendingCount">-</div>
+              <div class="stat-label">Pending Videos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="tgPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="tgFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="tgSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Telegram Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="tgPlanType" class="control-input" style="max-width:180px;">
+                <option value="daily-single">Every day at...</option>
+                <option value="daily-multi">Multiple times per day</option>
+                <option value="every-hours">Every X hours</option>
+                <option value="weekday">Weekdays only at...</option>
+                <option value="custom">Advanced Cron Expression</option>
+              </select>
+
+              <input type="time" id="tgPlanTime" class="control-input" value="09:00" style="max-width:140px;">
+              <input type="text" id="tgPlanTimes" class="control-input" placeholder="09:00, 14:00, 19:00"
+                style="max-width:220px; display:none;">
+              <select id="tgPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+
+              <button id="tgPlanApplyBtn" class="control-btn-small primary">
+                <i class="ph ph-check"></i> Set Schedule
+              </button>
+            </div>
+
+            <div id="tgCustomCronRow" class="input-group" style="margin-bottom:10px; display:none;">
+              <input type="text" id="tgCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="tgUpdateScheduleBtn" class="control-btn-small">Update Cron</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:12px; margin-bottom:16px;">
+              <div>Timezone: <span id="tgTimezoneLabel">UTC</span></div>
+              <div>Last run: <span id="tgLastRunLabel">Never</span></div>
+            </div>
+
+            <div class="toggle-row" style="margin-top:16px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="tgInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post Mode</div>
+                <div style="color:var(--text-muted); font-size:12px;">Auto-post immediately whenever a new video is dropped into the pending folder.</div>
+              </div>
+            </div>
+
+            <div class="toggle-row" style="margin-top:16px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="tgRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Telegram Queue</div>
+            <div class="queue-list" id="tgQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Telegram Live Logs</div>
+            <div class="logs-container" id="tgLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: X (Twitter) -->
+      <section id="view-x" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:#000; width:40px; height:40px; font-size:24px; color:#fff; border:1px solid #333;">
+              <i class="ph ph-x-logo"></i>
+            </div>
+            <div>
+              <h2 style="margin:0;">X (Twitter) Auto Post</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your X / Twitter schedule and queue</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="control-btn-small primary" data-platform="x" data-action="login"><i class="ph ph-sign-in"></i> Connect Account</button>
+            <button class="control-btn-small danger" data-platform="x" data-action="close" title="Close login browser"><i class="ph ph-x-circle"></i> Close Browser</button>
+            <span id="xSessionStatusBadge" class="status-badge">Checking...</span>
+            <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+            <button id="xRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="xStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="xStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="xPendingCount">-</div>
+              <div class="stat-label">Pending Videos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="xPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="xFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="xSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">X (Twitter) Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="xPlanType" class="control-input" style="max-width:180px;">
+                <option value="daily-single">Every day at...</option>
+                <option value="daily-multi">Multiple times per day</option>
+                <option value="every-hours">Every X hours</option>
+                <option value="weekday">Weekdays only at...</option>
+                <option value="custom">Advanced Cron Expression</option>
+              </select>
+
+              <input type="time" id="xPlanTime" class="control-input" value="09:00" style="max-width:140px;">
+              <input type="text" id="xPlanTimes" class="control-input" placeholder="09:00, 14:00, 19:00"
+                style="max-width:220px; display:none;">
+              <select id="xPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+
+              <button id="xPlanApplyBtn" class="control-btn-small primary">
+                <i class="ph ph-check"></i> Set Schedule
+              </button>
+            </div>
+
+            <div id="xCustomCronRow" class="input-group" style="margin-bottom:10px; display:none;">
+              <input type="text" id="xCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="xUpdateScheduleBtn" class="control-btn-small">Update Cron</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:12px; margin-bottom:16px;">
+              <div>Timezone: <span id="xTimezoneLabel">UTC</span></div>
+              <div>Last run: <span id="xLastRunLabel">Never</span></div>
+            </div>
+
+            <div class="toggle-row" style="margin-top:16px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="xInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post Mode</div>
+                <div style="color:var(--text-muted); font-size:12px;">Auto-post immediately whenever a new video is dropped into the pending folder.</div>
+              </div>
+            </div>
+
+            <div class="toggle-row" style="margin-top:16px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="xRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">X (Twitter) Queue</div>
+            <div class="queue-list" id="xQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">X (Twitter) Live Logs</div>
+            <div class="logs-container" id="xLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Calendar -->
+      <section id="view-calendar" class="view-section">
+        <header class="view-header">
+          <h2>Content Calendar & Scheduler</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button id="calPrevMonthBtn" class="control-btn-small" title="Previous Month"><i class="ph ph-caret-left"></i></button>
+            <span id="calMonthYearLabel" style="font-size:16px; font-weight:600; min-width:140px; text-align:center; display:inline-block;"></span>
+            <button id="calNextMonthBtn" class="control-btn-small" title="Next Month"><i class="ph ph-caret-right"></i></button>
+            <button id="calTodayBtn" class="control-btn-small">Today</button>
+            <div style="width:1px; height:24px; background:var(--border-color); margin:0 4px;"></div>
+            <div class="calendar-view-toggle">
+              <button id="calViewGridBtn" class="control-btn-small primary"><i class="ph ph-calendar"></i> Month</button>
+              <button id="calViewListBtn" class="control-btn-small"><i class="ph ph-list-dashes"></i> List</button>
+            </div>
+            <button id="calNewPostBtn" class="control-btn-small success">
+              <i class="ph ph-plus-circle"></i> New Post
+            </button>
+          </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-calendar-check"></i></div>
+            <div class="stat-value" id="calScheduledCount">0</div>
+            <div class="stat-label">Scheduled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success"><i class="ph ph-check-circle"></i></div>
+            <div class="stat-value success" id="calPublishedCount">0</div>
+            <div class="stat-label">Published</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon error"><i class="ph ph-x-circle"></i></div>
+            <div class="stat-value error" id="calFailedCount">0</div>
+            <div class="stat-label">Failed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warning"><i class="ph ph-clock"></i></div>
+            <div class="stat-value" id="calNextPostTime" style="font-size:14px; font-weight:600;">None</div>
+            <div class="stat-label">Next Scheduled</div>
+          </div>
+        </div>
+
+        <!-- Month Grid View -->
+        <div id="calMonthGridWrapper" class="card full-width" style="padding:16px;">
+          <div class="calendar-weekdays">
+            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+          </div>
+          <div class="calendar-days-grid" id="calDaysGrid"></div>
+        </div>
+
+        <!-- List View (hidden by default) -->
+        <div id="calListWrapper" class="card full-width hidden" style="padding:16px;">
+          <div class="card-title">All Scheduled & History Posts</div>
+          <div id="calPostsListContainer" class="calendar-posts-list"></div>
+        </div>
+      </section>
+
+      <!-- View: AI Agents & Skills -->
+      <section id="view-skills" class="view-section">
+        <header class="view-header agent-page-header">
+          <div><h2>Создать пост с агентами</h2><p>Задайте тему, включите нужные роли и получите результат ниже.</p></div>
+          <span class="status-badge" id="agentsConnectionStatus" role="status">Проверяем локальную модель…</span>
+        </header>
+        <form id="agentsCreateForm" class="card agents-composer">
+          <div class="agents-topic-row">
+            <div class="form-group"><label for="agentsTopic">Тема поста</label><input id="agentsTopic" class="control-input" required maxlength="500" placeholder="Например: как начать делегировать и не потерять контроль"></div>
+            <div class="form-group"><label for="agentsFormat">Формат</label><select id="agentsFormat" class="control-input"><option value="text">Текстовый пост</option><option value="video">Сценарий ролика</option><option value="carousel">Карусель</option></select></div>
+            <div class="form-group"><label for="agentsPlatform">Площадка</label><select id="agentsPlatform" class="control-input"><option value="instagram">Instagram</option><option value="telegram">Telegram</option><option value="x">X (Twitter)</option><option value="youtube">YouTube</option><option value="tiktok">TikTok</option></select></div>
+          </div>
+          <div class="form-group"><label for="agentsBrief">Исходный текст и пожелания <span class="agents-optional">необязательно</span></label><textarea id="agentsBrief" class="control-input" rows="3" maxlength="6000" placeholder="Ваши мысли, факты, аудитория и желаемый тон. Для анализа трендов добавьте выдержки и ссылки, для аналитики — показатели публикаций."></textarea></div>
+          <div class="agents-selection-header"><div><h3>Кого подключить</h3><span id="agentsSelectedCount">Выбрано 0 из 17</span></div><div class="agents-inline-actions"><button id="agentsSelectAll" type="button" class="control-btn-small">Включить всех</button><button id="agentsSelectNone" type="button" class="control-btn-small">Выключить всех</button></div></div>
+          <div class="skills-filter-bar" aria-label="Категории агентов"><button type="button" class="skills-filter-btn active" data-filter="all">Все</button><button type="button" class="skills-filter-btn" data-filter="text">Тексты</button><button type="button" class="skills-filter-btn" data-filter="video">Видео</button><button type="button" class="skills-filter-btn" data-filter="ideas">Идеи</button><button type="button" class="skills-filter-btn" data-filter="visual">Визуал</button><button type="button" class="skills-filter-btn" data-filter="strategy">Стратегия</button></div>
+          <div id="agentsToggleGrid" class="agents-toggle-grid" role="group" aria-label="Агенты для этого поста"></div>
+          <div class="agents-run-bar"><div class="agents-model-field"><label for="agentsModel">Бесплатная локальная модель</label><select id="agentsModel" class="control-input" aria-describedby="agentsLocalNote"><option value="">Загрузка моделей…</option></select><span id="agentsLocalNote">Генерация через Ollama на вашем компьютере. <button type="button" id="agentsRefreshModels" class="agents-refresh-button">Обновить модели</button></span></div><div class="agents-inline-actions"><button id="agentsCancelRun" type="button" class="control-btn neutral hidden">Остановить</button><button id="agentsRunButton" type="submit" class="control-btn primary" disabled><i class="ph ph-sparkle" aria-hidden="true"></i> Создать пост</button></div></div>
+          <p id="agentsFormMessage" class="agents-form-message" role="status" aria-live="polite"></p>
+        </form>
+        <section id="agentsResults" class="agents-results" aria-labelledby="agentsResultsTitle">
+          <div class="agents-results-header"><div><h3 id="agentsResultsTitle">Результат</h3><p id="agentsRunProgress" role="status" aria-live="polite">После запуска здесь появятся ответы выбранных агентов и текст поста.</p></div></div>
+          <div id="agentsOutputCard" class="card agents-output-card hidden"><div class="agents-output-header"><label for="agentsPostText">Текст поста — можно редактировать</label><span id="agentsTextCount"></span></div><textarea id="agentsPostText" class="control-input" rows="9" maxlength="16000" placeholder="Агенты ещё не подготовили текст…"></textarea><div class="agents-output-actions"><span id="agentsDraftStatus" role="status"></span><div class="agents-inline-actions"><button id="agentsCopyPost" type="button" class="control-btn neutral">Скопировать</button><button id="agentsSaveDraft" type="button" class="control-btn neutral">Сохранить черновик</button><button id="agentsToCalendar" type="button" class="control-btn primary"><i class="ph ph-calendar-plus" aria-hidden="true"></i> В календарь</button></div></div></div>
+          <div id="agentsStepResults" class="agents-step-results"></div>
+        </section>
+      </section>
+
+      <!-- View: Content Canvas -->
+      <section id="view-canvas" class="view-section">
+        <header class="view-header">
+          <div class="canvas-headline">
+            <h2><i class="ph ph-paint-brush-broad" style="color:var(--accent-color);"></i> Content Canvas & Studio</h2>
+            <div class="header-subtitle">Интерактивный холст создания контента с AI-агентами, референсами и прямой публикацией</div>
+          </div>
+          <div class="canvas-header-actions">
+            <button id="canvasSaveDraftBtn" class="control-btn-small neutral">
+              <i class="ph ph-floppy-disk"></i> Сохранить черновик
+            </button>
+            <button id="canvasSendToCalendarBtn" class="control-btn-small primary" style="font-weight:600;">
+              <i class="ph ph-calendar-plus"></i> В Календарь постов
+            </button>
+          </div>
+        </header>
+
+        <!-- Direction & Idea Top Bar -->
+        <div class="canvas-top-bar card">
+          <div class="canvas-top-bar-inputs">
+            <div class="canvas-topic-input-wrapper">
+              <label><i class="ph ph-lightbulb"></i> Тема или смысл контента:</label>
+              <input type="text" id="canvasTopicInput" class="control-input" placeholder="Например: Как автоматизировать постинг в 5 соцсетей и сэкономить 20 часов в неделю">
+            </div>
+
+            <div class="canvas-format-wrapper">
+              <label><i class="ph ph-device-mobile"></i> Формат:</label>
+              <select id="canvasFormatSelect" class="control-input">
+                <option value="video" selected>🎬 Short / Reel / TikTok (Видео)</option>
+                <option value="post">✍️ Пост (Telegram / X / LinkedIn)</option>
+                <option value="carousel">📑 Карусель / Слайды</option>
+              </select>
+            </div>
+
+            <div class="canvas-agent-wrapper">
+              <label><i class="ph ph-robot"></i> Ведущий агент:</label>
+              <select id="canvasAgentSelect" class="control-input">
+                <option value="reels-scripting" selected>🎬 Reels & Shorts Scriptwriter</option>
+                <option value="hook-generator">🎣 Hook Machine (Хуки и внимание)</option>
+                <option value="post-writer">✍️ Post & Formatter (Текст и стиль)</option>
+                <option value="youtube-thumbnail">🎨 Visual & Thumbnail Director</option>
+                <option value="post-scorer">📊 Critique & Virality Scorer</option>
+              </select>
+            </div>
+
+            <button id="canvasGenerateBtn" class="control-btn primary canvas-generate-btn">
+              <i class="ph ph-sparkle"></i> Создать креатив
+            </button>
+          </div>
+        </div>
+
+        <!-- 2-Column Canvas Studio Workspace -->
+        <div class="canvas-studio-grid">
+
+          <!-- Left Column: Agent Chat & References (40%) -->
+          <div class="canvas-sidebar-panel">
+
+            <!-- References Box -->
+            <div class="card canvas-card">
+              <div class="canvas-card-title">
+                <span><i class="ph ph-images"></i> Референсы и примеры</span>
+                <span id="canvasRefCount" class="badge-count">0</span>
+              </div>
+              <div class="canvas-ref-dropzone" id="canvasRefDropzone">
+                <i class="ph ph-cloud-arrow-up" style="font-size:24px; color:var(--accent-color);"></i>
+                <div style="font-size:12px; margin-top:4px;">Перетащите картинку-референс или <span class="browse-link" style="color:var(--accent-color); text-decoration:underline; cursor:pointer;">выберите файл</span></div>
+                <input type="file" id="canvasRefFileInput" accept="image/*" style="display:none;">
+              </div>
+              <div class="canvas-ref-gallery" id="canvasRefGallery">
+                <!-- Mini thumbnails of references -->
+              </div>
+            </div>
+
+            <!-- Agent Chat & Advice -->
+            <div class="card canvas-card canvas-chat-card">
+              <div class="canvas-card-title">
+                <span><i class="ph ph-chat-centered-dots"></i> Диалог и команды агентам</span>
+                <span class="status-badge active" style="font-size:10px;">Онлайн</span>
+              </div>
+
+              <!-- Quick Command Chips -->
+              <div class="canvas-quick-chips">
+                <button class="chip-btn" data-cmd="Придумай 4 жестких хука"><i class="ph ph-lightning"></i> 4 хука</button>
+                <button class="chip-btn" data-cmd="Сократи до 30 секунд без воды"><i class="ph ph-timer"></i> 30 секунд</button>
+                <button class="chip-btn" data-cmd="Оцени виральность текста"><i class="ph ph-chart-bar"></i> Оценка</button>
+                <button class="chip-btn" data-cmd="Сделай промпт для обложки с высоким CTR"><i class="ph ph-image"></i> Обложка</button>
+                <button class="chip-btn" data-cmd="Сделай CTA на комментарии"><i class="ph ph-chats"></i> CTA</button>
+              </div>
+
+              <!-- Chat messages list -->
+              <div class="canvas-chat-messages" id="canvasChatMessages">
+                <div class="agent-chat-msg system">
+                  <div class="agent-avatar"><i class="ph ph-sparkle"></i></div>
+                  <div class="agent-bubble">
+                    Привет! Напишите тему сверху и нажмите <strong>«Создать креатив»</strong>. Я разложу контент по блокам: хук, таймлайн, визуал и обложку. Вы сможете вносить любые правки командами прямо здесь!
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chat input -->
+              <div class="canvas-chat-input-bar">
+                <input type="text" id="canvasChatInput" class="control-input" placeholder="Команда агенту: например «сделай хук жестче»...">
+                <button id="canvasSendChatBtn" class="control-btn-small primary"><i class="ph ph-paper-plane-right"></i></button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Creative Canvas Area (60%) -->
+          <div class="canvas-main-panel">
+
+            <!-- Virality Score & Meta Bar -->
+            <div class="canvas-meta-bar card">
+              <div class="canvas-score-box">
+                <div class="score-circle" id="canvasScoreCircle">88</div>
+                <div class="score-info">
+                  <div class="score-label">Индекс виральности</div>
+                  <div class="score-sub" id="canvasScoreNotes">Высокая плотность смыслов, контрастный хук</div>
+                </div>
+              </div>
+              <div class="canvas-quick-actions">
+                <button id="canvasCopyAllBtn" class="control-btn-small neutral" title="Скопировать весь креатив">
+                  <i class="ph ph-copy"></i> Копировать всё
+                </button>
+              </div>
+            </div>
+
+            <!-- 1. The Hook Box -->
+            <div class="card canvas-card">
+              <div class="canvas-block-header">
+                <div class="canvas-block-title">
+                  <span class="block-number">1</span>
+                  <span>⚡ Хук (Первые 3 секунды / Первая строка)</span>
+                </div>
+                <div class="hook-variant-selector">
+                  <label style="font-size:11px; color:var(--text-muted); margin:0;">Варианты:</label>
+                  <select id="canvasHookVariantSelect" class="control-input-mini" style="background:#222; border:1px solid #444; color:#fff; border-radius:4px; padding:2px 6px; font-size:11px;"></select>
+                </div>
+              </div>
+              <div class="canvas-field-wrapper">
+                <textarea id="canvasHookText" class="canvas-textarea" rows="2" placeholder="Главный хук для удержания внимания..."></textarea>
+              </div>
+            </div>
+
+            <!-- 2. Timeline / Script / Post Body -->
+            <div class="card canvas-card">
+              <div class="canvas-block-header">
+                <div class="canvas-block-title">
+                  <span class="block-number">2</span>
+                  <span>🎬 Сценарий и таймлайн (Таймкоды, визуал и голос)</span>
+                </div>
+                <button id="canvasSwitchTimelineModeBtn" class="control-btn-small neutral" style="font-size:11px; padding:2px 8px;">
+                  <i class="ph ph-arrows-left-right"></i> Текст / Таймлайн
+                </button>
+              </div>
+
+              <!-- Interactive Timeline View -->
+              <div id="canvasTimelineView" class="canvas-timeline-container">
+                <div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px;">
+                  Нажмите «Создать креатив», чтобы сгенерировать пошаговый таймлайн видео.
+                </div>
+              </div>
+
+              <!-- Raw Text Script View (Alternative) -->
+              <div id="canvasRawScriptView" class="canvas-field-wrapper hidden">
+                <textarea id="canvasScriptText" class="canvas-textarea" rows="8" placeholder="Текст сценария или поста..."></textarea>
+              </div>
+            </div>
+
+            <!-- 3. Call to Action (CTA) -->
+            <div class="card canvas-card">
+              <div class="canvas-block-header">
+                <div class="canvas-block-title">
+                  <span class="block-number">3</span>
+                  <span>🎯 Призыв к действию (CTA)</span>
+                </div>
+              </div>
+              <div class="canvas-field-wrapper">
+                <input type="text" id="canvasCtaText" class="control-input" placeholder="Призыв к действию (комментарий, подписка, лид-магнит)...">
+              </div>
+            </div>
+
+            <!-- 4. Visual Prompt & Thumbnail Box -->
+            <div class="card canvas-card">
+              <div class="canvas-block-header">
+                <div class="canvas-block-title">
+                  <span class="block-number">4</span>
+                  <span>🎨 Визуал & Промпт для обложки</span>
+                </div>
+                <button id="canvasCopyPromptBtn" class="control-btn-small neutral" style="font-size:11px; padding:2px 8px;">
+                  <i class="ph ph-copy"></i> Копировать промпт
+                </button>
+              </div>
+              <div class="canvas-field-wrapper">
+                <textarea id="canvasVisualPromptText" class="canvas-textarea" rows="2" placeholder="Промпт для генерации обложки в Gemini / Midjourney..."></textarea>
+              </div>
+            </div>
+
+            <!-- 5. Tags & Meta -->
+            <div class="card canvas-card">
+              <div class="canvas-block-header">
+                <div class="canvas-block-title">
+                  <span class="block-number">5</span>
+                  <span>🏷️ Хештеги и ключевые слова</span>
+                </div>
+              </div>
+              <div class="canvas-field-wrapper">
+                <input type="text" id="canvasTagsText" class="control-input" placeholder="#бизнес #автоматизация ...">
+              </div>
+            </div>
+
+            <!-- Bottom Publish Action Banner -->
+            <div class="canvas-publish-bar">
+              <div class="publish-bar-info">
+                <i class="ph ph-rocket-launch" style="font-size:24px; color:var(--accent-color);"></i>
+                <div>
+                  <strong style="font-size:14px;">Готовы к публикации?</strong>
+                  <div style="font-size:12px; color:var(--text-muted);">Перенесите созданный креатив в Календарь постов для отправки в YouTube, TikTok и др.</div>
+                </div>
+              </div>
+              <button id="canvasBottomSendToCalBtn" class="control-btn primary">
+                <i class="ph ph-calendar-plus"></i> Отправить в Календарь постов
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- View: Video Uniquifier -->
+      <section id="view-uniquifier" class="view-section">
+        <header class="view-header">
+          <h2>Video Uniquifier</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="uniqStartBtn" class="control-btn-small success">
+              <i class="ph ph-play-circle"></i> Start Uniquifying
+            </button>
+            <button id="uniqStopBtn" class="control-btn-small danger">
+              <i class="ph ph-stop-circle"></i> Stop
+            </button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="card full-width">
+            <div class="card-title">Folders</div>
+            <div class="form-group">
+              <label>Input Folder (put original videos here)</label>
+              <div class="input-group">
+                <input id="uniqInputDir" class="control-input" type="text" placeholder="Input folder path">
+                <button id="uniqOpenInputBtn" class="control-btn-small">
+                  <i class="ph ph-folder-open"></i> Open
+                </button>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <label>Output Folder (uniquified videos will be saved here)</label>
+              <div class="input-group">
+                <input id="uniqOutputDir" class="control-input" type="text" placeholder="Output folder path">
+                <button id="uniqOpenOutputBtn" class="control-btn-small">
+                  <i class="ph ph-folder-open"></i> Open
+                </button>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <label>Logo Image (optional overlay)</label>
+              <input id="uniqLogoImage" class="control-input" type="text"
+                placeholder="user-assets/logo.png or C:\path\to\logo.png">
+            </div>
+          </div>
+
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="uniqState">-</div>
+              <div class="stat-label">Batch State</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="uniqProgress">0 / 0</div>
+              <div class="stat-label">Progress</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="uniqSucceeded">0</div>
+              <div class="stat-label">Succeeded</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="uniqFailed">0</div>
+              <div class="stat-label">Failed</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Input Videos</div>
+            <div class="queue-list" id="uniqInputFiles"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Output Videos</div>
+            <div class="queue-list" id="uniqOutputFiles"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Uniquifier Logs</div>
+            <div class="logs-container" id="uniqLogs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Settings -->
+      <section id="view-settings" class="view-section">
+        <header class="view-header">
+          <h2>Settings</h2>
+        </header>
+
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card-title">Content Defaults</div>
+            <div class="form-group">
+              <label>Default Caption</label>
+              <textarea id="defaultCaptionInput" class="control-input" rows="4"
+                placeholder="Optional fallback caption when no sidecar file exists"></textarea>
+            </div>
+            <button id="defaultCaptionSaveBtn" class="control-btn-small primary" style="margin-top:8px;">
+              <i class="ph ph-floppy-disk"></i> Save Caption
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Telegram Bot Credentials</div>
+            <div class="form-group">
+              <label>Bot Token</label>
+              <input type="password" id="tgBotTokenInput" class="control-input" placeholder="e.g. 123456789:ABCdefGhIJKlmNoPQR">
+            </div>
+            <div class="form-group">
+              <label>Chat ID / Channel Username</label>
+              <input type="text" id="tgChatIdInput" class="control-input" placeholder="e.g. @mychannel or -1001234567890">
+            </div>
+            <button id="tgSaveConfigBtn" class="control-btn-small primary" style="margin-top:8px;">
+              <i class="ph ph-floppy-disk"></i> Save Telegram Settings
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Auto Download -->
+      <section id="view-autodownload" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:linear-gradient(135deg, #6366f1, #a855f7); width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-download-simple"></i></div>
+            <div>
+              <h2 style="margin:0;">Auto Download</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Watch a TikTok channel and auto-queue new
+                videos</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="adStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="adStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="adWatcherState">-</div>
+              <div class="stat-label">Watcher State</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="adTotalDownloaded">0</div>
+              <div class="stat-label">Videos Downloaded</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="adLastCheck">Never</div>
+              <div class="stat-label">Last Checked</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Download Settings</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+              <div class="form-group">
+                <label>TikTok Channel / Username</label>
+                <input type="text" id="adChannel" class="control-input" placeholder="@username or full URL">
+              </div>
+              <div class="form-group">
+                <label>Check Interval (minutes)</label>
+                <input type="number" id="adInterval" class="control-input" min="1" value="10">
+              </div>
+              <div class="form-group">
+                <label>Max Videos Per Check</label>
+                <input type="number" id="adMaxVideos" class="control-input" min="1" value="5">
+              </div>
+              <div class="form-group">
+                <label>Post To Platforms</label>
+                <div style="display:flex; gap:12px; align-items:center; padding-top:6px; flex-wrap:wrap;">
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatTiktok" value="tiktok" checked> TikTok
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatInstagram" value="instagram"> Instagram
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatYoutube" value="youtube"> YouTube
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatTelegram" value="telegram"> Telegram
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatX" value="x"> X (Twitter)
+                  </label>
+                </div>
+              </div>
+            </div>
+            <button id="adSaveSettingsBtn" class="control-btn-small primary" style="margin-top:8px;"><i
+                class="ph ph-floppy-disk"></i> Save Settings</button>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Download Live Logs</div>
+            <div class="logs-container" id="adLogsContainer" style="height:320px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile downloader view -->
+      <section id="view-profile-download" class="view-section">
+        <div class="view-header">
+          <h1>Profile Downloader</h1>
+          <p>Scrape specific TikTok channels and filter by view count. Videos will be saved to <code
+              style="padding: 2px 4px; background: rgba(255,255,255,0.1); border-radius: 4px;">autodownload/profile_downloads/</code>.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+          <h2 class="card-title"><i class="ph ph-sliders"></i> Configuration</h2>
+          <div class="settings-grid">
+            <div class="form-group">
+              <label>TikTok Channel</label>
+              <input type="text" id="pdChannel" class="control-input" placeholder="e.g. @username">
+            </div>
+            <div class="form-group">
+              <label>Max Videos to Scan</label>
+              <input type="number" id="pdMaxVideos" class="control-input" min="0" placeholder="0 = All Videos"
+                value="0">
+            </div>
+            <div class="form-group">
+              <label>Min Views Filter</label>
+              <input type="number" id="pdMinViews" class="control-input" min="0" placeholder="0 = No filter"
+                value="0">
+            </div>
+          </div>
+          <div style="margin-top:20px; display:flex; gap:12px;">
+            <button id="pdStartBtn" class="control-btn primary">
+              <i class="ph ph-play"></i> Start Scraping
+            </button>
+            <button id="pdScanBtn" class="control-btn neutral" style="border: 1px solid var(--border-color);">
+              <i class="ph ph-magnifying-glass"></i> Check Videos
+            </button>
+            <button id="pdOpenFolderBtn" class="control-btn neutral">
+              <i class="ph ph-folder-open"></i> Open Downloads
+            </button>
+          </div>
+        </div>
+
+        <div class="two-col-layout">
+          <!-- Live Logs -->
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+              <h2 class="card-title">Live Logs</h2>
+              <span id="pdStatusBadge" class="status-badge">Idle</span>
+            </div>
+            <div class="logs-container" id="pdLogsContainer">
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: New Scheduled Post -->
+  <div id="calNewPostModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="ph ph-calendar-plus"></i> Schedule New Post</h3>
+        <button id="calModalCloseBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Existing posts banner for selected day -->
+        <div id="calDayExistingPostsBanner" class="cal-day-existing-banner hidden"></div>
+
+        <!-- Photo and video upload -->
+        <div class="form-group">
+          <label>Фото и видео <span style="color:var(--text-muted); font-size:12px;">(до 30 файлов, каждый — отдельный пост)</span></label>
+          <div id="calDropzone" class="file-dropzone">
+            <i class="ph ph-upload-simple" style="font-size:32px; color:var(--accent-color);"></i>
+            <div id="calDropzoneText" style="margin-top:8px;">Перетащите фото или видео сюда, <span class="browse-link" style="color:var(--accent-color); text-decoration:underline; cursor:pointer;">выберите файлы</span> или вставьте фото: Ctrl+V</div>
+            <input type="file" id="calMediaFileInput" accept="image/*,video/*,.jpg,.jpeg,.jfif,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.heif,.avif,.svg,.mp4,.mov,.m4v,.webm,.mkv,.avi,.mpeg,.mpg,.3gp,.ts,.mts" multiple style="display:none;">
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:8px; line-height:1.5;">JPG, PNG, WEBP, GIF, BMP, TIFF, HEIC/HEIF, AVIF, SVG. Фото — до 50 МБ. Для публикации фото сохраняются в JPEG; GIF/TIFF — первый кадр или страница.</div>
+          <div id="calPhotoPlatformHint" class="hidden" role="status" style="font-size:12px; color:var(--accent-color); margin-top:8px;">Фото публикуются в Instagram, Telegram и X. YouTube и TikTok доступны только для видео.</div>
+
+          <!-- Single/Multiple selected files preview -->
+          <div id="calSelectedFilesContainer" class="selected-files-container hidden" style="margin-top:8px;">
+            <div id="calSelectedFilesList" class="selected-files-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+          </div>
+        </div>
+
+        <!-- Batch distribution options -->
+        <div id="calBatchOptionsWrapper" class="form-group hidden" style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="margin:0; color:#a5b4fc; font-weight:600;"><i class="ph ph-calendar-check"></i> Распределение постов на день</label>
+            <span id="calBatchCountLabel" style="font-size:12px; color:#fff; font-weight:600;"></span>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+            Фото и видео будут распределены с выбранным интервалом:
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; color:var(--text-muted); margin:0;">Интервал между постами:</label>
+            <select id="calBatchIntervalSelect" class="control-input" style="width:auto; padding:4px 8px; font-size:12px;">
+              <option value="1">Каждый 1 час</option>
+              <option value="2">Каждые 2 часа</option>
+              <option value="3" selected>Каждые 3 часа</option>
+              <option value="4">Каждые 4 часа</option>
+              <option value="5">Каждые 5 часов</option>
+            </select>
+          </div>
+          <div id="calBatchTimelinePreview" style="margin-top:10px; display:flex; flex-direction:column; gap:4px; font-size:12px;"></div>
+        </div>
+
+        <!-- Caption -->
+        <div class="form-group">
+          <label>Текст поста / Описание</label>
+          <textarea id="calCaptionInput" class="control-input" rows="3" placeholder="Заголовок, описание, хештеги..."></textarea>
+        </div>
+
+        <!-- Scheduled Date and Time with Quick Slots -->
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label style="margin:0;">Дата и время публикации <span id="calScheduleTimeLabelHint" style="font-size:11px; color:var(--text-muted);"></span></label>
+            <span id="calTimeRecommendation" style="font-size:11px; color:var(--accent-color); font-weight:500;"></span>
+          </div>
+          <input type="datetime-local" id="calScheduleTimeInput" class="control-input">
+
+          <!-- Quick slot presets -->
+          <div class="time-presets-bar" style="margin-top:8px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">Быстрые слоты времени на этот день:</div>
+            <div class="time-presets-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="time-preset-btn" data-time="10:00">🌅 10:00</button>
+              <button type="button" class="time-preset-btn" data-time="13:30">☀️ 13:30</button>
+              <button type="button" class="time-preset-btn" data-time="17:00">☕ 17:00</button>
+              <button type="button" class="time-preset-btn" data-time="20:00">🌆 20:00</button>
+              <button type="button" class="time-preset-btn" data-time="22:00">🌙 22:00</button>
+              <button type="button" class="time-preset-btn" data-offset="3">+3 часа</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Social Platforms -->
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="margin:0;">Target Social Networks</label>
+            <button type="button" id="calSelectAllPlatsBtn" class="control-btn-small" style="font-size:11px; padding:2px 8px;">Select All</button>
+          </div>
+          <div class="calendar-platforms-selection">
+            <label class="platform-checkbox-label">
+              <input type="checkbox" name="calPlatform" value="tiktok" checked>
+              <i class="ph ph-tiktok-logo"></i> TikTok
+            </label>
+            <label class="platform-checkbox-label">
+              <input type="checkbox" name="calPlatform" value="instagram" checked>
+              <i class="ph ph-instagram-logo"></i> Instagram
+            </label>
+            <label class="platform-checkbox-label">
+              <input type="checkbox" name="calPlatform" value="youtube" checked>
+              <i class="ph ph-youtube-logo"></i> YouTube
+            </label>
+            <label class="platform-checkbox-label">
+              <input type="checkbox" name="calPlatform" value="telegram" checked>
+              <i class="ph ph-paper-plane-tilt"></i> Telegram
+            </label>
+            <label class="platform-checkbox-label">
+              <input type="checkbox" name="calPlatform" value="x" checked>
+              <i class="ph ph-x-logo"></i> X (Twitter)
+            </label>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div id="calUploadProgressWrapper" class="upload-progress-wrapper hidden" style="margin-top:10px;">
+          <div class="upload-progress-bar-container" style="height:6px; background:#333; border-radius:3px; overflow:hidden;">
+            <div class="upload-progress-bar" id="calUploadProgressBar" style="width:0%; height:100%; background:var(--accent-color); transition:width 0.2s;"></div>
+          </div>
+          <div class="upload-progress-label" id="calUploadProgressLabel" style="font-size:12px; color:var(--text-muted); margin-top:4px;">Uploading...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="calModalCancelBtn" class="control-btn neutral">Cancel</button>
+        <button type="button" id="calModalSubmitBtn" class="control-btn primary">
+          <i class="ph ph-calendar-check"></i> Schedule Post
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Post Details -->
+  <div id="calDetailModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="ph ph-info"></i> Post Details</h3>
+        <button id="calDetailCloseBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" id="calDetailBody"></div>
+      <div class="modal-footer">
+        <button type="button" id="calDetailDeleteBtn" class="control-btn danger">
+          <i class="ph ph-trash"></i> Delete Post
+        </button>
+        <button type="button" id="calDetailPublishNowBtn" class="control-btn primary">
+          <i class="ph ph-paper-plane-right"></i> Publish Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="agents.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

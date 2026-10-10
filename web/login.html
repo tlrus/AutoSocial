@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in - AutoSocial</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100svh; display:grid; place-items:center; padding:24px; background:#0e1118; color:#f3f5fb; font:16px/1.5 system-ui,sans-serif; }
+    main { width:100%; max-width:400px; padding:32px; background:#191e2a; border:1px solid #343c50; border-radius:18px; }
+    .logo { font-size:24px; font-weight:750; margin-bottom:28px; }
+    h1 { font-size:24px; margin:0 0 20px; }
+    label { display:block; margin-bottom:8px; }
+    input,button { width:100%; min-height:48px; font:inherit; border-radius:8px; }
+    input { padding:10px 12px; background:#0e1118; color:inherit; border:1px solid #67728a; }
+    button { margin-top:20px; border:0; background:#7689ff; color:#0c1020; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.65; }
+    :focus-visible { outline:3px solid #aab6ff; outline-offset:3px; }
+    #error { color:#ffb4b4; min-height:24px; margin:16px 0 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="logo">AutoSocial</div>
+    <h1>Sign in</h1>
+    <form id="loginForm">
+      <label for="password">Dashboard password</label>
+      <input id="password" type="password" name="password" autocomplete="current-password" required maxlength="1024" autofocus>
+      <button id="submit" type="submit">Sign in</button>
+      <p id="error" role="alert"></p>
+    </form>
+  </main>
+  <script src="/login.js" defer></script>
+</body>
+</html>
