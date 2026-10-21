@@ -2,7 +2,7 @@ const originalFetch = window.fetch.bind(window);
 window.fetch = async (...args) => {
   const response = await originalFetch(...args);
   const url = new URL(args[0] instanceof Request ? args[0].url : args[0], location.href);
-  if (response.status === 401 && url.origin === location.origin && url.pathname.startsWith("/api/")) location.replace("/login");
+  if (response.status === 401 && url.origin === location.origin && url.pathname.startsWith("/api/")) location.replace("/login" + location.hash);
   return response;
 };
 
@@ -71,6 +71,10 @@ function escapeHtml(value) {
 }
 
 const Router = {
+  isKnownView(viewName) {
+    return Boolean(viewName && document.getElementById("view-" + viewName)?.classList.contains("view-section"));
+  },
+
   init() {
     const navItems = document.querySelectorAll(".nav-item");
     navItems.forEach((btn) => {
@@ -79,14 +83,22 @@ const Router = {
         this.navigate(view);
       });
     });
+    const restoreView = () => {
+      const requested = location.hash.slice(1);
+      this.navigate(this.isKnownView(requested) ? requested : "connections", { syncHash: false });
+    };
+    window.addEventListener("hashchange", restoreView);
+    restoreView();
   },
 
-  navigate(viewName) {
+  navigate(viewName, { syncHash = true } = {}) {
+    if (!this.isKnownView(viewName)) viewName = "connections";
+    if (syncHash && location.hash !== "#" + viewName) history.pushState(null, "", "#" + viewName);
     document.querySelectorAll(".nav-item").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.view === viewName);
     });
     document.querySelectorAll(".view-section").forEach((sec) => {
-      sec.classList.toggle("active", sec.id === `view-${viewName}`);
+      sec.classList.toggle("active", sec.id === "view-" + viewName);
     });
     document.dispatchEvent(new CustomEvent("autosocial:viewchange", { detail: { viewName } }));
   },
@@ -2176,7 +2188,7 @@ const UI = {
               <i class="ph ph-user"></i>
               <span>${escapeHtml(profileName)}</span>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px;">
+            <div class="overview-platform-grid">
               ${cards.join("")}
             </div>
           </div>

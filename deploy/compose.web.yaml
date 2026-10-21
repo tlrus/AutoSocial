@@ -1,0 +1,62 @@
+name: autosocial
+services:
+  autosocial:
+    image: ${AUTOSOCIAL_IMAGE:-autosocial:web}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    shm_size: 1gb
+    environment:
+      TZ: ${TZ:-Asia/Almaty}
+      AUTOSOCIAL_DATA_DIR: /data
+      AUTOSOCIAL_ENV_FILE: /data/settings.env
+      AUTOSOCIAL_SECRETS_FILE: /run/secrets/runtime_env
+      AUTOSOCIAL_START_BACKGROUND: ${AUTOSOCIAL_START_BACKGROUND:-false}
+      DASHBOARD_HOST: 0.0.0.0
+      DASHBOARD_PORT: "3000"
+      DASHBOARD_ALLOW_REMOTE: "true"
+      DASHBOARD_TRUST_PROXY: "true"
+      DASHBOARD_PUBLIC_URL: ${DASHBOARD_PUBLIC_URL:?Set the permanent HTTPS dashboard origin}
+    secrets:
+      - dashboard_password_hash
+      - runtime_env
+    volumes:
+      - autosocial-data:/data
+    expose:
+      - "3000"
+    stop_grace_period: 40s
+    logging: &logs
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2}
+    restart: unless-stopped
+    environment:
+      AUTOSOCIAL_DOMAIN: ${AUTOSOCIAL_DOMAIN:?Set the permanent server hostname}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      autosocial:
+        condition: service_healthy
+    logging: *logs
+secrets:
+  dashboard_password_hash:
+    file: ./secrets/dashboard-password-hash
+  runtime_env:
+    file: ./secrets/runtime.env
+volumes:
+  autosocial-data:
+    name: autosocial-data
+  caddy-data:
+    name: autosocial-caddy-data
+  caddy-config:
+    name: autosocial-caddy-config

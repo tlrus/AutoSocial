@@ -54,6 +54,9 @@ const {
 const { startCalendarScheduler, stopCalendarScheduler } = require("./calendar-scheduler");
 const { CanvasController } = require("./canvas-controller");
 const { AgentRunner } = require("./agent-runner");
+const { createAccountDataService } = require("./account-data-service");
+const { createSocialConnectionService } = require("./social-connection-service");
+const { installPublicAppRoutes, installSocialConnectionRoutes } = require("./social-connection-routes");
 
 function uploadFilename(file) {
   const name = file.originalname;
@@ -122,8 +125,10 @@ function applyRuntimeSetting(envKey, value) {
     config.randomQueueOrder = String(value).toLowerCase() === "true";
   } else if (envKey === "TELEGRAM_BOT_TOKEN") {
     config.telegramBotToken = String(value ?? "");
+    process.env.TELEGRAM_BOT_TOKEN = config.telegramBotToken;
   } else if (envKey === "TELEGRAM_CHAT_ID") {
     config.telegramChatId = String(value ?? "");
+    process.env.TELEGRAM_CHAT_ID = config.telegramChatId;
   }
 }
 
@@ -177,6 +182,7 @@ async function createServer({ listen = true, startBackground = config.startBackg
   const profileDownloader = new ProfileDownloadController();
   const canvasController = new CanvasController(config.projectRoot);
   const agentRunner = new AgentRunner(config.projectRoot);
+  const socialConnections = createSocialConnectionService();
 
   const tmpUploadDir = path.resolve(config.projectRoot, "uploads", "tmp");
   await fs.mkdir(tmpUploadDir, { recursive: true });
@@ -186,8 +192,10 @@ async function createServer({ listen = true, startBackground = config.startBackg
   });
 
   app.use(createDashboardRequestGuard({ publicUrl: config.dashboardPublicUrl }));
+  installPublicAppRoutes(app, { service: socialConnections });
   installDashboardAuth(app, { passwordHash: config.dashboardPasswordHash });
   app.use(express.json({ limit: "50mb" }));
+  installSocialConnectionRoutes(app, { service: socialConnections, getActiveAccount });
   app.use(express.static(path.join(__dirname, "..", "web")));
   app.use("/user-assets", express.static(path.join(config.projectRoot, "user-assets")));
 
@@ -301,7 +309,8 @@ async function createServer({ listen = true, startBackground = config.startBackg
         applyRuntimeSetting(envKey, value);
       }
 
-      await fs.writeFile(envPath, lines.join("\n").replace(/\n{2,}/g, "\n"));
+      await fs.writeFile(envPath, lines.join("\n").replace(/\n{2,}/g, "\n"), { mode: 0o600 });
+      await fs.chmod(envPath, 0o600);
       res.json({ ok: true });
     } catch (error) {
       res.status(400).json({ ok: false, error: error.message });
@@ -314,6 +323,33 @@ async function createServer({ listen = true, startBackground = config.startBackg
     const state = await getState();
     const active = await getActiveAccount();
     res.json({ ...state, activeAccount: active });
+  });
+
+  // Read-only archive of saved posts across brands; never changes selection.
+  const accountData = createAccountDataService();
+  const accountDataError = (res, error) => {
+    const status = [400, 404].includes(error.status) ? error.status : 500;
+    res.status(status).json({ ok: false, error: status === 500 ? "Данные аккаунтов недоступны." : error.message });
+  };
+  app.get("/api/account-data", async (req, res) => {
+    try { res.json(await accountData.collect(req.query)); }
+    catch (error) { accountDataError(res, error); }
+  });
+  app.get("/api/account-data/export", async (req, res) => {
+    try {
+      const { format = "json", ...filters } = req.query;
+      if (!["json", "csv"].includes(format)) return res.status(400).json({ ok: false, error: "Unsupported export format." });
+      const contents = format === "csv" ? await accountData.exportCSV(filters) : await accountData.exportJSON(filters);
+      res.attachment(`autosocial-account-data.${format}`).type(format === "csv" ? "text/csv" : "application/json").send(contents);
+    } catch (error) { accountDataError(res, error); }
+  });
+  app.get("/api/account-data/media", async (req, res) => {
+    try {
+      const mediaPath = await accountData.resolveMedia(req.query.accountId, req.query.postId);
+      res.sendFile(mediaPath, { dotfiles: "deny" }, (error) => {
+        if (error && !res.headersSent) res.status(404).json({ ok: false, error: "Media not found." });
+      });
+    } catch (error) { accountDataError(res, error); }
   });
 
   app.post("/api/accounts/add", async (req, res) => {
@@ -1147,7 +1183,7 @@ async function createServer({ listen = true, startBackground = config.startBackg
         daemon._stopWatching?.();
       }
     }
-    await Promise.allSettled([closeTikTokLoginSession(), closeInstagramLoginSession(), closeYouTubeLoginSession(), closeXLoginSession()]);
+    await Promise.allSettled([socialConnections.shutdown(), closeTikTokLoginSession(), closeInstagramLoginSession(), closeYouTubeLoginSession(), closeXLoginSession()]);
     if (server) await new Promise((resolve) => { server.close(resolve); server.closeIdleConnections(); });
   }
   return { app, server, shutdown };

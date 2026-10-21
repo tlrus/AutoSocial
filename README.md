@@ -42,6 +42,9 @@ local control plane.
 
 ## Features
 
+- Install the HTTPS dashboard as an app on a phone or Mac. The default My Socials view connects Instagram, TikTok, YouTube, X, and a configured Telegram bot using official APIs, with saved profiles, available statistics, import progress, and explicit refresh. Follow [Web app deployment](docs/WEB_APP_DEPLOYMENT.md) to configure hosting and provider credentials.
+- Social access tokens are encrypted on the persistent data volume and are never sent to the browser. API coverage depends on provider permissions and plans; Telegram reads pending bot updates, not full channel history. Offline mode shows a connection screen and does not cache private account data.
+- Browse saved calendar posts and queue media across all accounts in the Account Data view (`#account-data`), with search, filters, and JSON/CSV exports. This catalog uses local AutoSocial data; browser cookies, tokens, and private settings are excluded.
 - Manage multiple brands/accounts with isolated queues and browser sessions.
 - Use the First-Run Setup page to verify local dependencies, login sessions,
   and queue folders.
@@ -90,7 +93,7 @@ npm run dashboard
 
 Open http://127.0.0.1:3000.
 
-Start with the `Setup` view. It checks local dependencies and shows the exact
+The default `My Socials` view shows official API connections. Use `Setup` for browser-based publishing: it checks local dependencies and shows the exact
 pending folders where videos should be dropped for each platform.
 
 ## Configuration

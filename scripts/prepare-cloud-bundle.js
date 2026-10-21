@@ -6,8 +6,8 @@ const crypto = require("node:crypto");
 const root = path.resolve(__dirname, "..");
 const included = [
   "src", "web", "test", "package.json", "package-lock.json", "Dockerfile", ".dockerignore", ".gitignore", ".gitattributes", ".env.example",
-  "README.md", "SETUP.md", "docs/AGENT-POSTS.md", "docs/CLOUD-MIGRATION.md", ".github/workflows/ci.yml",
-  "deploy/compose.yaml", "deploy/Caddyfile", "deploy/.env.example", "deploy/entrypoint.sh", "deploy/backup.sh", "deploy/autosocial-backup.service", "deploy/autosocial-backup.timer",
+  "README.md", "SETUP.md", "docs/AGENT-POSTS.md", "docs/CLOUD-MIGRATION.md", "docs/WEB_APP_DEPLOYMENT.md", ".github/workflows/ci.yml",
+  "deploy/compose.yaml", "deploy/compose.web.yaml", "deploy/Caddyfile", "deploy/.env.example", "deploy/entrypoint.sh", "deploy/backup.sh", "deploy/autosocial-backup.service", "deploy/autosocial-backup.timer",
   "autodownload/watcher.js", "scripts/doctor.js", "scripts/setup-dashboard-password.js", "scripts/check-syntax.js", "scripts/clean-runtime.js",
   "scripts/cloud-data.js", "scripts/cloud-smoke.js", "scripts/prepare-cloud-secrets.js", "scripts/prepare-cloud-bundle.js",
   "sites/worker.mjs", "sites/build.mjs", "sites/package.json", "sites/worker.test.mjs",

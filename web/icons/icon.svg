@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>AutoSocial</title>
+  <defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+  <rect width="512" height="512" fill="#09090b"/>
+  <rect x="76" y="76" width="360" height="360" rx="84" fill="url(#a)"/>
+  <path d="M176 344L256 164L336 344M202 286H310" fill="none" stroke="#fff" stroke-width="35" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

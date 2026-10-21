@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoSocial Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AutoSocial</title>
   <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AutoSocial" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/pwa.css" />
+  <link rel="stylesheet" href="/social-connections.css" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
@@ -42,7 +51,11 @@
       </div>
 
       <nav class="nav-menu">
-        <button class="nav-item active" data-view="overview">
+        <button class="nav-item active" data-view="connections">
+          <i class="ph ph-globe"></i>
+          <span>Мои соцсети</span>
+        </button>
+        <button class="nav-item" data-view="overview">
           <i class="ph ph-squares-four"></i>
           <span>Overview</span>
         </button>
@@ -104,6 +117,10 @@
           <i class="ph ph-users"></i>
           <span>Accounts</span>
         </button>
+        <button class="nav-item" data-view="account-data">
+          <i class="ph ph-database"></i>
+          <span>Архив приложения</span>
+        </button>
         <button class="nav-item" data-view="settings">
           <i class="ph ph-gear"></i>
           <span>Settings</span>
@@ -122,14 +139,88 @@
     <!-- Main Content -->
     <main class="main-content">
 
+      <section id="view-connections" class="view-section active">
+        <header class="view-header social-page-header">
+          <div>
+            <h2>Мои соцсети</h2>
+            <p class="view-subtitle">Ваши аккаунты, публикации и доступная статистика — прямо из социальных сетей.</p>
+          </div>
+          <div class="social-header-actions">
+            <button id="socialConnectionsRefresh" type="button" class="control-btn-small">Проверить состояние</button>
+            <button id="socialSyncAll" type="button" class="control-btn-small primary" disabled>Обновить все аккаунты</button>
+          </div>
+        </header>
+
+        <div class="social-intro">
+          <p>Подключите свой аккаунт через соцсеть. AutoSocial покажет данные, которые платформа разрешит получить.</p>
+          <p class="social-muted">Публикации появятся здесь после подключения и синхронизации. Файлы скачивать не нужно.</p>
+          <p id="socialCollectedAt" class="social-muted">Подключения ещё не проверены.</p>
+        </div>
+        <p id="socialConnectionsMessage" class="social-message" role="status" aria-live="polite"></p>
+
+        <aside id="socialHostingNotice" class="social-hosting-notice hidden" aria-labelledby="socialHostingTitle">
+          <h3 id="socialHostingTitle">Нужен постоянный адрес сервиса</h3>
+          <p id="socialHostingReason"></p>
+          <p>Владельцу сервиса нужно подключить постоянный HTTPS-адрес. После этого можно будет входить в соцсети и открывать приложение по одному адресу с любого устройства.</p>
+        </aside>
+
+        <div class="social-summary" aria-label="Полученные данные">
+          <div class="social-summary-item"><span>Аккаунтов в приложении</span><strong id="socialTotalAccounts">—</strong></div>
+          <div class="social-summary-item"><span>Получено постов</span><strong id="socialTotalPosts">—</strong></div>
+          <div class="social-summary-item"><span>Последняя успешная синхронизация</span><strong id="socialLatestSync">Ещё не выполнялось</strong></div>
+        </div>
+
+        <div class="social-section-heading">
+          <h3>Подключить соцсеть</h3>
+          <p class="social-muted">Подключение добавится в выбранный бренд.</p>
+        </div>
+        <div id="socialProviderCards" class="social-provider-grid"></div>
+
+        <div class="social-section-heading"><h3>Ваши аккаунты</h3><p class="social-muted">Данные получены через официальные API платформ.</p></div>
+        <div id="socialAccounts" class="social-account-grid" aria-busy="false"></div>
+        <div id="socialAccountsEmpty" class="social-empty hidden">
+          <h4>Подключите первый аккаунт</h4>
+          <p class="social-muted">Разрешите доступ в соцсети — профиль, доступные посты и статистика появятся в приложении.</p>
+        </div>
+
+        <section id="socialPostsSection" class="social-posts-section" aria-labelledby="socialPostsHeading">
+          <div class="social-section-heading"><h3 id="socialPostsHeading">Публикации из соцсетей</h3></div>
+          <p id="socialCoverageNote" class="social-coverage-warning hidden">Для некоторых аккаунтов получена часть публикаций. Ограничения и продолжение загрузки указаны в карточках аккаунтов.</p>
+          <div class="social-filter-bar">
+            <label for="socialPostAccount">Аккаунт<select id="socialPostAccount" class="control-input"><option value="">Все аккаунты</option></select></label>
+            <label for="socialPostPlatform">Платформа
+              <select id="socialPostPlatform" class="control-input">
+                <option value="">Все платформы</option><option value="instagram">Instagram</option><option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option><option value="telegram">Telegram</option><option value="x">X (Twitter)</option>
+              </select>
+            </label>
+            <label for="socialPostSearch">Поиск<input id="socialPostSearch" type="search" maxlength="500" class="control-input" placeholder="Текст поста или имя аккаунта…" autocomplete="off" /></label>
+          </div>
+          <div class="social-posts-status">
+            <p id="socialPostsCount" class="social-muted" role="status" aria-live="polite">Публикации ещё не загружены.</p>
+            <button id="socialPostsReset" type="button" class="control-btn-small hidden">Сбросить фильтры</button>
+          </div>
+          <div id="socialPosts" class="social-post-grid"></div>
+          <div id="socialPostsEmpty" class="social-empty hidden">
+            <h4 id="socialPostsEmptyTitle">Публикации ещё не получены</h4>
+            <p id="socialPostsEmptyText" class="social-muted"></p>
+          </div>
+          <nav id="socialPostsPagination" class="social-pagination hidden" aria-label="Страницы публикаций">
+            <button id="socialPostsPrevious" type="button" class="control-btn-small">Назад</button>
+            <span id="socialPostsPage"></span>
+            <button id="socialPostsNext" type="button" class="control-btn-small">Далее</button>
+          </nav>
+        </section>
+      </section>
+
       <!-- View: Overview -->
-      <section id="view-overview" class="view-section active">
+      <section id="view-overview" class="view-section">
         <header class="view-header">
           <h2>Dashboard Overview</h2>
         </header>
 
         <!-- Totals Row -->
-        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+        <div class="overview-totals">
           <div class="stat-card">
             <div class="stat-icon"><i class="ph ph-film-strip"></i></div>
             <div class="stat-value" id="pendingCount">0</div>
@@ -232,6 +323,103 @@
               <div class="setup-empty">Loading next steps...</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="view-account-data" class="view-section">
+        <header class="view-header account-data-header">
+          <div>
+            <h2>Архив приложения</h2>
+            <p class="view-subtitle">Посты из календаря и очередей всех аккаунтов AutoSocial в одном месте.</p>
+          </div>
+          <button id="accountDataRefresh" type="button" class="control-btn-small">Обновить</button>
+        </header>
+
+        <div class="account-data-source-note">
+          <i class="ph ph-database" aria-hidden="true"></i>
+          <div>
+            <p>Источник — сохранённые данные AutoSocial: календарь, очереди и состояние подключений.</p>
+            <p class="account-data-muted">Это локальная история приложения. Данные профилей и история постов из соцсетей сюда автоматически не импортируются.</p>
+            <span id="accountDataCollectedAt" class="account-data-muted">Данные ещё не собраны.</span>
+          </div>
+        </div>
+        <p id="accountDataMessage" class="account-data-message" role="status" aria-live="polite"></p>
+
+        <div class="account-data-stats" aria-label="Все сохранённые данные">
+          <div class="stat-card"><div id="accountDataTotalAccounts" class="stat-value">—</div><div class="stat-label">Аккаунтов</div></div>
+          <div class="stat-card"><div id="accountDataTotalPosts" class="stat-value">—</div><div class="stat-label">Всего постов</div></div>
+          <div class="stat-card"><div id="accountDataTotalPosted" class="stat-value success">—</div><div class="stat-label">Опубликовано</div></div>
+          <div class="stat-card"><div id="accountDataTotalPending" class="stat-value">—</div><div class="stat-label">В очереди и запланировано</div></div>
+          <div class="stat-card"><div id="accountDataTotalFailed" class="stat-value error">—</div><div class="stat-label">С ошибкой</div></div>
+        </div>
+
+        <details id="accountDataWarnings" class="account-data-warnings hidden">
+          <summary id="accountDataWarningsLabel">Предупреждения</summary>
+          <ul id="accountDataWarningsList"></ul>
+        </details>
+
+        <details class="card account-data-accounts">
+          <summary>Аккаунты и подключения <span id="accountDataAccountsCount" class="account-data-count">—</span></summary>
+          <p class="account-data-muted">Сохранённая сессия показывает наличие подключения, но не подтверждает, что вход в соцсеть ещё действует.</p>
+          <div id="accountDataAccountsList" class="account-data-accounts-grid"></div>
+        </details>
+
+        <div class="card account-data-filters">
+          <div class="account-data-section-header">
+            <h3>Все посты</h3>
+            <button id="accountDataReset" type="button" class="control-btn-small hidden">Сбросить фильтры</button>
+          </div>
+          <div class="account-data-filter-grid">
+            <label for="accountDataAccount">Аккаунт
+              <select id="accountDataAccount" class="control-input"><option value="">Все аккаунты</option></select>
+            </label>
+            <label for="accountDataPlatform">Платформа
+              <select id="accountDataPlatform" class="control-input">
+                <option value="">Все платформы</option>
+                <option value="tiktok">TikTok</option><option value="instagram">Instagram</option>
+                <option value="youtube">YouTube</option><option value="telegram">Telegram</option><option value="x">X (Twitter)</option>
+              </select>
+            </label>
+            <label for="accountDataStatus">Статус
+              <select id="accountDataStatus" class="control-input">
+                <option value="">Все статусы</option>
+                <option value="pending">В очереди</option><option value="scheduled">Запланирован</option>
+                <option value="posted">Опубликован (очередь)</option><option value="published">Опубликован (календарь)</option>
+                <option value="publishing">Публикуется</option><option value="partial">Частично опубликован</option>
+                <option value="failed">Ошибка</option><option value="unknown">Статус неизвестен</option>
+              </select>
+            </label>
+            <label for="accountDataSource">Источник
+              <select id="accountDataSource" class="control-input">
+                <option value="">Все источники</option><option value="calendar">Календарь</option><option value="queue">Очередь</option>
+              </select>
+            </label>
+          </div>
+          <label class="account-data-search-label" for="accountDataSearch">Поиск
+            <input id="accountDataSearch" type="search" maxlength="500" class="control-input" placeholder="Текст поста, имя файла или аккаунт…" autocomplete="off" />
+          </label>
+          <div class="account-data-export-row">
+            <p id="accountDataExportNote" class="account-data-muted">Экспорт станет доступен после загрузки данных.</p>
+            <div class="account-data-export-actions">
+              <a id="accountDataJson" class="control-btn-small" download aria-disabled="true">Скачать JSON</a>
+              <a id="accountDataCsv" class="control-btn-small" download aria-disabled="true">Скачать CSV</a>
+            </div>
+          </div>
+        </div>
+
+        <div id="accountDataResults" class="account-data-results">
+          <p id="accountDataResultCount" class="account-data-result-count" role="status" aria-live="polite">Откройте страницу, чтобы загрузить посты.</p>
+          <div id="accountDataPosts" class="account-data-posts" aria-busy="false"></div>
+          <div id="accountDataEmpty" class="card account-data-empty hidden">
+            <i class="ph ph-files" aria-hidden="true"></i>
+            <h3 id="accountDataEmptyTitle">Сохранённых постов пока нет</h3>
+            <p id="accountDataEmptyText" class="account-data-muted"></p>
+          </div>
+          <nav id="accountDataPagination" class="account-data-pagination hidden" aria-label="Страницы постов">
+            <button id="accountDataPrevious" type="button" class="control-btn-small">Назад</button>
+            <span id="accountDataPageLabel"></span>
+            <button id="accountDataNext" type="button" class="control-btn-small">Далее</button>
+          </nav>
         </div>
       </section>
 
@@ -1593,7 +1781,10 @@
   </div>
 
   <script src="agents.js"></script>
+  <script src="account-data.js"></script>
+  <script src="/social-connections.js"></script>
   <script src="app.js"></script>
+  <script src="/pwa.js" defer></script>
 </body>
 
 </html>

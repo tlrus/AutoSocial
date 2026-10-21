@@ -10,9 +10,11 @@ document.getElementById("loginForm").addEventListener("submit", async (event) =>
       body: JSON.stringify({ password: document.getElementById("password").value }),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Unable to sign in.");
+    if (!response.ok) throw new Error(data.error || "Не удалось войти. Повторите попытку.");
     document.getElementById("password").value = "";
-    window.location.replace("/");
+    const views = new Set(["connections", "overview", "calendar", "skills", "canvas", "tiktok", "instagram", "youtube", "telegram", "x", "uniquifier", "autodownload", "profile-download", "setup", "accounts", "account-data", "settings"]);
+    const requested = window.location.hash.slice(1);
+    window.location.replace("/" + (views.has(requested) ? "#" + requested : "#connections"));
   } catch (failure) { error.textContent = failure.message; }
   finally { button.disabled = false; }
 });

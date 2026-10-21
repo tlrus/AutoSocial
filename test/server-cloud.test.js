@@ -40,6 +40,14 @@ test("cloud server protects real routes, stores data separately, and refuses ano
   const settings = await fetch(`${url}/api/settings/save`, { method: "POST", headers, body: JSON.stringify({ payload: { DEFAULT_CAPTION: "saved in persistent data" } }) });
   assert.equal(settings.status, 200);
   assert.match(await fs.readFile(config.envFile, "utf8"), /saved in persistent data/);
+  const socialBefore = await (await fetch(`${url}/api/social-connections`, { headers })).json();
+  assert.equal(socialBefore.providers.find((provider) => provider.id === "telegram").configured, false);
+  const telegramSettings = await fetch(`${url}/api/settings/save`, { method: "POST", headers, body: JSON.stringify({ payload: { TELEGRAM_BOT_TOKEN: "SENTINEL_SETTINGS_BOT", TELEGRAM_CHAT_ID: "-100123" } }) });
+  assert.equal(telegramSettings.status, 200);
+  const socialAfter = await (await fetch(`${url}/api/social-connections`, { headers })).json();
+  assert.equal(socialAfter.providers.find((provider) => provider.id === "telegram").available, true);
+  assert.equal(JSON.stringify(socialAfter).includes("SENTINEL_SETTINGS_BOT"), false);
+  if (process.platform !== "win32") assert.equal((await fs.stat(config.envFile)).mode & 0o777, 0o600);
   const daemons = await getDaemons("default");
   assert.equal(daemons.youtube._queueWatcher, null);
   assert.equal(daemons.youtube.task, null);

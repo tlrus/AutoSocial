@@ -1,9 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign in - AutoSocial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Вход — AutoSocial</title>
+  <meta name="theme-color" content="#09090b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AutoSocial" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/pwa.css" />
+
   <style>
     * { box-sizing: border-box; }
     body { margin:0; min-height:100svh; display:grid; place-items:center; padding:24px; background:#0e1118; color:#f3f5fb; font:16px/1.5 system-ui,sans-serif; }
@@ -22,14 +31,15 @@
 <body>
   <main>
     <div class="logo">AutoSocial</div>
-    <h1>Sign in</h1>
+    <h1>Войти</h1>
     <form id="loginForm">
-      <label for="password">Dashboard password</label>
+      <label for="password">Пароль AutoSocial</label>
       <input id="password" type="password" name="password" autocomplete="current-password" required maxlength="1024" autofocus>
-      <button id="submit" type="submit">Sign in</button>
+      <button id="submit" type="submit">Войти</button>
       <p id="error" role="alert"></p>
     </form>
   </main>
   <script src="/login.js" defer></script>
+  <script src="/pwa.js" defer></script>
 </body>
 </html>

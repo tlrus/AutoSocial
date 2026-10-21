@@ -32,3 +32,6 @@ autodownload/profile_downloads
 autodownload/*.exe
 autodownload/archive.txt
 autodownload/*.json
+
+# Public install icons are part of the web app.
+!web/icons/*.png
